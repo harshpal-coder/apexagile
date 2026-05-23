@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ApexAgile is an enterprise-grade MERN agile project management platform inspired by Jira and Linear. Track issues, run sprints, and collaborate." />
     <title>ApexAgile | Enterprise Agile Project Tracking MERN SaaS</title>
+    <script>
+      // Gold-standard theme initializer to prevent layout theme flashing
+      const theme = localStorage.getItem('theme') || 'dark';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
