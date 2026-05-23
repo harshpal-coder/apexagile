@@ -55,7 +55,7 @@ export default function RegisterPage() {
     const initGoogleBtn = () => {
       if (window.google?.accounts?.id) {
         window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1041926639535-oecgh1uol1f3omipenus6r7a80hnd5om.apps.googleusercontent.com',
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '292824033411-448s81o71c86ag50um1lkbcrfn14idoc.apps.googleusercontent.com',
           callback: handleGoogleCallback,
         });
         
