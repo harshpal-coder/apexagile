@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { KanbanSquare, Mail, Lock, User, AlertTriangle, ArrowLeft, Shield } from 'lucide-react';
 import { useAuthStore } from '../context/useAuthStore';
@@ -11,7 +11,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState('Member');
   const [localError, setLocalError] = useState('');
 
-  const { register, loading, error: storeError } = useAuthStore();
+  const { register, googleLogin, loading, error: storeError } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +41,46 @@ export default function RegisterPage() {
   const handleBackToLanding = () => {
     navigate('/');
   };
+
+  const handleGoogleCallback = async (response) => {
+    setLocalError('');
+    const result = await googleLogin(response.credential);
+    if (result.success) {
+      navigate('/dashboard');
+    }
+  };
+
+  useEffect(() => {
+    let checkInterval;
+    const initGoogleBtn = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1041926639535-oecgh1uol1f3omipenus6r7a80hnd5om.apps.googleusercontent.com',
+          callback: handleGoogleCallback,
+        });
+        
+        const container = document.getElementById('googleSignInDiv');
+        if (container) {
+          window.google.accounts.id.renderButton(
+            container,
+            { 
+              theme: 'filled_black', 
+              size: 'large', 
+              text: 'signup_with',
+              shape: 'rectangular',
+              width: '382'
+            }
+          );
+          clearInterval(checkInterval);
+        }
+      }
+    };
+
+    initGoogleBtn();
+    checkInterval = setInterval(initGoogleBtn, 300);
+
+    return () => clearInterval(checkInterval);
+  }, []);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-darkBg text-slate-100 px-4 py-12">
@@ -175,6 +215,19 @@ export default function RegisterPage() {
             )}
           </button>
         </form>
+
+        {/* Google Authentication */}
+        <div className="space-y-4">
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-darkBorder/40"></div>
+            <span className="flex-shrink mx-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Or continue with</span>
+            <div className="flex-grow border-t border-darkBorder/40"></div>
+          </div>
+          
+          <div className="w-full flex justify-center">
+            <div id="googleSignInDiv" className="w-full"></div>
+          </div>
+        </div>
 
         {/* Redirect */}
         <p className="text-xs text-center text-slate-400 mt-4">

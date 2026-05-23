@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { KanbanSquare, Mail, Lock, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../context/useAuthStore';
@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
   
-  const { login, loading, error: storeError } = useAuthStore();
+  const { login, googleLogin, loading, error: storeError } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,6 +29,46 @@ export default function LoginPage() {
   const handleBackToLanding = () => {
     navigate('/');
   };
+
+  const handleGoogleCallback = async (response) => {
+    setLocalError('');
+    const result = await googleLogin(response.credential);
+    if (result.success) {
+      navigate('/dashboard');
+    }
+  };
+
+  useEffect(() => {
+    let checkInterval;
+    const initGoogleBtn = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1041926639535-oecgh1uol1f3omipenus6r7a80hnd5om.apps.googleusercontent.com',
+          callback: handleGoogleCallback,
+        });
+        
+        const container = document.getElementById('googleSignInDiv');
+        if (container) {
+          window.google.accounts.id.renderButton(
+            container,
+            { 
+              theme: 'filled_black', 
+              size: 'large', 
+              text: 'signin_with',
+              shape: 'rectangular',
+              width: '382'
+            }
+          );
+          clearInterval(checkInterval);
+        }
+      }
+    };
+
+    initGoogleBtn();
+    checkInterval = setInterval(initGoogleBtn, 300);
+
+    return () => clearInterval(checkInterval);
+  }, []);
 
   const autofillDemo = (demoType) => {
     if (demoType === 'admin') {
@@ -128,8 +168,21 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* Google Authentication */}
+        <div className="space-y-4">
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-darkBorder/40"></div>
+            <span className="flex-shrink mx-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Or continue with</span>
+            <div className="flex-grow border-t border-darkBorder/40"></div>
+          </div>
+          
+          <div className="w-full flex justify-center">
+            <div id="googleSignInDiv" className="w-full"></div>
+          </div>
+        </div>
+
         {/* Demo Quick Fills */}
-        <div className="pt-2 border-t border-darkBorder/40">
+        <div className="pt-4 border-t border-darkBorder/40">
           <p className="text-[10px] text-center text-slate-500 uppercase tracking-wider font-bold mb-3">
             Quick-access Seed Demo Accounts
           </p>

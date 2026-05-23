@@ -39,6 +39,29 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  googleLogin: async (credential) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await axios.post(`${API_URL}/auth/google-login`, { credential });
+      const { token: userToken, user } = res.data;
+      
+      localStorage.setItem('jira_token', userToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
+      
+      set({ 
+        token: userToken, 
+        user, 
+        isAuthenticated: true, 
+        loading: false 
+      });
+      return { success: true };
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Google Sign-in failed';
+      set({ error: errMsg, loading: false });
+      return { success: false, error: errMsg };
+    }
+  },
+
   register: async (username, email, password, role) => {
     set({ loading: true, error: null });
     try {
