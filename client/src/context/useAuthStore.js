@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:5000/api' : '/api';
 
-// Setup axios default token if stored
 const token = localStorage.getItem('jira_token');
 if (token) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -103,7 +102,6 @@ export const useAuthStore = create((set, get) => ({
       const res = await axios.get(`${API_URL}/auth/me`);
       set({ user: res.data.user, isAuthenticated: true, loading: false });
     } catch (err) {
-      // Token is likely invalid/expired
       localStorage.removeItem('jira_token');
       delete axios.defaults.headers.common['Authorization'];
       set({

@@ -4,14 +4,10 @@ const { User, Workspace } = require('../models');
 const { JWT_SECRET } = require('../middleware/auth');
 const { OAuth2Client } = require('google-auth-library');
 
-// Helper to sign JWT
 const signToken = (id) => {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
 };
 
-// @desc    Register user
-// @route   POST /api/auth/register
-// @access  Public
 exports.register = async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
@@ -20,7 +16,6 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
     }
 
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ success: false, message: 'User already exists with this email' });
@@ -31,11 +26,9 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Username is already taken' });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
     const user = await User.create({
       username,
       email,
@@ -45,7 +38,6 @@ exports.register = async (req, res) => {
       workspaces: []
     });
 
-    // Create default workspace for user
     const workspaceSlug = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}-workspace`;
     const workspace = await Workspace.create({
       name: `${username}'s Workspace`,
@@ -55,12 +47,10 @@ exports.register = async (req, res) => {
       members: [user._id]
     });
 
-    // Update user's workspaces
     await User.findByIdAndUpdate(user._id, {
       $push: { workspaces: workspace._id }
     });
 
-    // Sign token
     const token = signToken(user._id);
 
     return res.status(201).json({
@@ -81,9 +71,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -92,19 +79,16 @@ exports.login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide email and password' });
     }
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Sign token
     const token = signToken(user._id);
 
     return res.json({
@@ -125,9 +109,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// @desc    Get current user profile
-// @route   GET /api/auth/me
-// @access  Private
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -152,9 +133,6 @@ exports.getMe = async (req, res) => {
   }
 };
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-// @access  Private
 exports.updateProfile = async (req, res) => {
   try {
     const { username, email, avatar, password } = req.body;
@@ -188,9 +166,6 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Google OAuth2 Login / Register
-// @route   POST /api/auth/google-login
-// @access  Public
 exports.googleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
@@ -221,16 +196,12 @@ exports.googleLogin = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Google token does not contain email' });
     }
 
-    // Check if user exists
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Create user if not exists
-      // Generate safe username from name or email
       let baseUsername = name ? name.toLowerCase().replace(/[^a-z0-9]/g, '') : email.split('@')[0];
       if (!baseUsername) baseUsername = 'googleuser';
       
-      // Ensure unique username
       let username = baseUsername;
       let usernameExists = await User.findOne({ username });
       let counter = 1;
@@ -240,11 +211,9 @@ exports.googleLogin = async (req, res) => {
         counter++;
       }
 
-      // Generate a secure random password since we're using Google
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), salt);
 
-      // Create new user
       user = await User.create({
         username,
         email,
@@ -254,7 +223,6 @@ exports.googleLogin = async (req, res) => {
         workspaces: []
       });
 
-      // Create a default workspace for this user
       const workspaceSlug = `${username}-workspace`;
       const workspace = await Workspace.create({
         name: `${name || username}'s Workspace`,
@@ -264,13 +232,11 @@ exports.googleLogin = async (req, res) => {
         members: [user._id]
       });
 
-      // Update user's workspaces list
       user = await User.findByIdAndUpdate(user._id, {
         $push: { workspaces: workspace._id }
       }, { new: true });
     }
 
-    // Sign JWT token
     const token = signToken(user._id);
 
     return res.status(200).json({

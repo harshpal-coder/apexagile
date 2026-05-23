@@ -84,7 +84,6 @@ export default function RegisterPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-darkBg text-slate-100 px-4 py-12">
-      {/* Background Lights */}
       <div className="glow-spot top-[10%] right-[10%]" />
       <div className="glow-spot-indigo bottom-[10%] left-[10%]" />
 
@@ -102,7 +101,6 @@ export default function RegisterPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md p-8 rounded-2xl glass-panel border border-darkBorder/60 shadow-glass space-y-6"
       >
-        {/* Brand Header */}
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="bg-brand-500 p-3 rounded-xl shadow-premium inline-flex items-center justify-center cursor-pointer" onClick={handleBackToLanding}>
             <KanbanSquare className="w-6 h-6 text-white" />
@@ -111,7 +109,6 @@ export default function RegisterPage() {
           <p className="text-sm text-slate-400">Join ApexAgile to plan and track issues</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {(localError || storeError) && (
             <motion.div
@@ -166,7 +163,6 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Role selector */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-slate-400 tracking-wide flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-brand-400" />
@@ -216,7 +212,6 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        {/* Google Authentication */}
         <div className="space-y-4">
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-darkBorder/40"></div>
@@ -229,7 +224,6 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Redirect */}
         <p className="text-xs text-center text-slate-400 mt-4">
           Already have an account?{' '}
           <button

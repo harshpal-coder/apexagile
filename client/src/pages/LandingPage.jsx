@@ -156,14 +156,12 @@ export default function LandingPage() {
               <Sparkles className="w-3 h-3" /> Real-time active updates
             </span>
           </div>
-          {/* Custom responsive mockup chart graph */}
           <div className="h-44 w-full bg-darkSurface rounded-xl border border-darkBorder/60 p-4 relative overflow-hidden flex flex-col justify-between">
             <div className="flex justify-between text-[10px] text-slate-500 font-mono">
               <span>Points remaining</span>
               <span>Sprint progression (days)</span>
             </div>
             
-            {/* SVG line and points mock */}
             <div className="absolute inset-x-8 bottom-6 top-8">
               <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                 <defs>
@@ -172,14 +170,10 @@ export default function LandingPage() {
                     <stop offset="100%" stopColor="#a855f7" stopOpacity="0"/>
                   </linearGradient>
                 </defs>
-                {/* Area under curve */}
                 <path d="M 0,0 L 25,25 L 50,60 L 75,70 L 100,100 L 100,100 L 0,100 Z" fill="url(#glowGrad)" />
-                {/* Ideal line */}
                 <line x1="0" y1="0" x2="100" y2="100" stroke="#475569" strokeDasharray="3,3" strokeWidth="1" />
-                {/* Actual line */}
                 <path d="M 0,0 L 25,25 L 50,60 L 75,70 L 100,100" fill="none" stroke="#a855f7" strokeWidth="2.5" />
               </svg>
-              {/* Dynamic point dots mock */}
               <div className="absolute top-[25%] left-[25%] w-2 h-2 rounded-full bg-white border border-brand-500 shadow animate-ping" />
               <div className="absolute top-[25%] left-[25%] w-2 h-2 rounded-full bg-brand-500 border border-white" />
             </div>
@@ -198,12 +192,10 @@ export default function LandingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-darkBg text-slate-100 selection:bg-brand-500 selection:text-white">
-      {/* Decorative Glowing Spotlights */}
       <div className="glow-spot top-[-10%] left-[-10%] scale-150" />
       <div className="glow-spot-indigo top-[30%] right-[-10%] scale-125" />
       <div className="glow-spot bottom-[-10%] left-[20%] scale-110" />
 
-      {/* Header / Navbar */}
       <header className="sticky top-0 z-50 px-6 py-4 glass-panel border-b border-darkBorder/40">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer animate-fade-in" onClick={() => navigate('/')}>
@@ -232,7 +224,6 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <main className="relative max-w-7xl mx-auto px-6 pt-20 pb-28">
         <motion.div
           variants={containerVariants}
@@ -282,7 +273,6 @@ export default function LandingPage() {
           </motion.div>
         </motion.div>
 
-        {/* Dynamic Metric Banner */}
         <section className="mt-20 py-8 border-y border-darkBorder/40 bg-darkSurface/20 backdrop-blur-sm rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div>
             <h4 className="text-3xl font-extrabold text-white bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">14x</h4>
@@ -302,7 +292,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Stateful Interactive Product Tabs Showcase */}
         <section className="mt-32 space-y-8">
           <div className="text-center space-y-3">
             <h2 className="text-3xl md:text-5xl font-extrabold text-white">Full-Stack Capability</h2>
@@ -332,7 +321,6 @@ export default function LandingPage() {
             })}
           </div>
 
-          {/* Interactive display board */}
           <div className="p-2 rounded-2xl bg-gradient-to-b from-darkBorder to-darkBg border border-darkBorder/80 shadow-glass overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-darkBorder/40 bg-darkSurface/50">
               <div className="flex items-center gap-2">
@@ -375,7 +363,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Feature Grid */}
         <section className="mt-32 space-y-12">
           <div className="text-center space-y-3">
             <h2 className="text-3xl md:text-5xl font-extrabold text-white">Built for High-Velocity Squads</h2>
@@ -429,7 +416,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Curated Product Testimonials */}
         <section className="mt-32 space-y-12">
           <div className="text-center space-y-3">
             <h2 className="text-3xl md:text-5xl font-extrabold text-white">Loved by Engineering Leads</h2>
@@ -489,7 +475,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing Cards Grid */}
         <section className="mt-32 space-y-12">
           <div className="text-center space-y-3">
             <h2 className="text-3xl md:text-5xl font-extrabold text-white">Flexible Pricing Plans</h2>
@@ -499,7 +484,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free tier */}
             <div className="p-8 rounded-2xl bg-darkSurface border border-darkBorder/60 flex flex-col justify-between gap-6 hover:border-slate-700 transition-colors">
               <div className="space-y-2">
                 <h4 className="text-lg font-bold text-slate-400 uppercase tracking-wide">Developer Sandbox</h4>
@@ -527,7 +511,6 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Pro tier */}
             <div className="p-8 rounded-2xl bg-gradient-to-b from-darkSurface to-brand-500/5 border-2 border-brand-500 flex flex-col justify-between gap-6 relative overflow-hidden scale-[1.03]">
               <div className="absolute top-0 right-0 bg-brand-500 text-white font-bold text-[9px] uppercase px-4 py-1.5 rounded-bl-xl tracking-wider">
                 POPULAR CHOICE
@@ -559,7 +542,6 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Enterprise tier */}
             <div className="p-8 rounded-2xl bg-darkSurface border border-darkBorder/60 flex flex-col justify-between gap-6 hover:border-slate-700 transition-colors">
               <div className="space-y-2">
                 <h4 className="text-lg font-bold text-slate-400 uppercase tracking-wide">Enterprise Scale</h4>
@@ -588,7 +570,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Dynamic FAQ Accordion */}
         <section className="mt-32 space-y-12 max-w-4xl mx-auto">
           <div className="text-center space-y-3">
             <h2 className="text-3xl md:text-5xl font-extrabold text-white">Frequently Asked Questions</h2>
@@ -634,7 +615,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Call to action section */}
         <section className="mt-32 p-8 md:p-12 rounded-3xl bg-gradient-to-r from-brand-600 to-indigo-700 border border-brand-500 shadow-premium relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8 max-w-5xl mx-auto">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.08),transparent)]" />
           <div className="space-y-3 relative z-10 text-center md:text-left">
@@ -652,7 +632,6 @@ export default function LandingPage() {
           </button>
         </section>
 
-        {/* Footer */}
         <footer className="mt-32 pt-12 border-t border-darkBorder/40 text-center space-y-4">
           <div className="flex justify-center items-center gap-2">
             <KanbanSquare className="w-5 h-5 text-brand-500" />

@@ -85,7 +85,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-darkBg text-slate-100 px-4">
-      {/* Lights */}
       <div className="glow-spot top-[10%] left-[10%]" />
       <div className="glow-spot-indigo bottom-[10%] right-[10%]" />
 
@@ -103,7 +102,6 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md p-8 rounded-2xl glass-panel border border-darkBorder/60 shadow-glass space-y-6"
       >
-        {/* Brand */}
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="bg-brand-500 p-3 rounded-xl shadow-premium inline-flex items-center justify-center cursor-pointer" onClick={handleBackToLanding}>
             <KanbanSquare className="w-6 h-6 text-white" />
@@ -112,7 +110,6 @@ export default function LoginPage() {
           <p className="text-sm text-slate-400">Log in to manage sprints and collaborate</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {(localError || storeError) && (
             <motion.div
@@ -168,7 +165,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Google Authentication */}
         <div className="space-y-4">
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-darkBorder/40"></div>
@@ -181,7 +177,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Demo Quick Fills */}
         <div className="pt-4 border-t border-darkBorder/40">
           <p className="text-[10px] text-center text-slate-500 uppercase tracking-wider font-bold mb-3">
             Quick-access Seed Demo Accounts
@@ -208,7 +203,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Footer Link */}
         <p className="text-xs text-center text-slate-400 mt-4">
           Don't have an account?{' '}
           <button
