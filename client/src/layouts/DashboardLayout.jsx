@@ -24,14 +24,17 @@ import {
   ChevronsUpDown,
   Tag,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 import { useAuthStore } from '../context/useAuthStore';
 import { useWorkspaceStore } from '../context/useWorkspaceStore';
 import { useTaskStore } from '../context/useTaskStore';
 import { useSprintStore } from '../context/useSprintStore';
 import { useNotificationStore } from '../context/useNotificationStore';
+import { useSaaSStore } from '../context/useSaaSStore';
 import { navigate, usePath } from '../utils/router';
+import axios from 'axios';
 
 export default function DashboardLayout({ children }) {
   const currentPath = usePath();
@@ -50,6 +53,7 @@ export default function DashboardLayout({ children }) {
   } = useWorkspaceStore();
 
   const { createTask } = useTaskStore();
+  const { openUpgradeModal } = useSaaSStore();
   const { fetchSprints } = useSprintStore();
   const { notifications, unreadCount, fetchNotifications, markAsRead } = useNotificationStore();
 
@@ -119,11 +123,34 @@ export default function DashboardLayout({ children }) {
     fetchWorkspaces();
     fetchNotifications();
 
+    // Mount global SaaS limit interceptor
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 402) {
+          const message = error.response.data?.message || '';
+          
+          // Detect limit details
+          let limitType = 'workspace';
+          if (message.toLowerCase().includes('member')) limitType = 'member';
+          else if (message.toLowerCase().includes('task')) limitType = 'task';
+          
+          // Open SaaS Upgrade Modal automatically!
+          useSaaSStore.getState().openUpgradeModal('Pro', limitType);
+        }
+        return Promise.reject(error);
+      }
+    );
+
     // Set polling for notifications
     const interval = setInterval(() => {
       fetchNotifications();
     }, 15000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      axios.interceptors.response.eject(interceptor);
+    };
   }, []);
 
   // Update active sprints when project switches
@@ -203,6 +230,7 @@ export default function DashboardLayout({ children }) {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Kanban Board', path: '/board', icon: KanbanSquare },
     { name: 'Sprints & Backlog', path: '/sprint', icon: Milestone },
+    { name: 'Timeline & Gantt', path: '/timeline', icon: Calendar },
     { name: 'Team Collaboration', path: '/team', icon: Users },
     { name: 'User Profile', path: '/profile', icon: User },
     { name: 'Workspace Admin', path: '/settings', icon: Settings },
@@ -360,6 +388,26 @@ export default function DashboardLayout({ children }) {
             );
           })}
         </nav>
+
+        {/* Gold SaaS Upgrade Promo banner in sidebar */}
+        {!sidebarCollapsed && user?.subscription?.plan === 'Free' && (
+          <div className="mx-4 my-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-transparent border border-amber-500/20 text-xs space-y-2.5 shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rounded-full blur-xl pointer-events-none" />
+            <div className="flex items-center gap-1.5 font-extrabold text-amber-500">
+              <Sparkles className="w-4 h-4 animate-pulse" />
+              <span>ApexAgile Free</span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-normal">
+              Unlock sprints, burndown charts, Gantt timelines, and invite up to 15 members!
+            </p>
+            <button
+              onClick={() => openUpgradeModal('Pro', null)}
+              className="w-full py-2 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-extrabold rounded-xl transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+            >
+              💎 Upgrade to Pro
+            </button>
+          </div>
+        )}
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-slate-200 dark:border-darkBorder/30">

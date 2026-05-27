@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
-
-const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:5000/api' : '/api';
+import { API_URL } from '../config';
 
 export const useNotificationStore = create((set, get) => ({
   notifications: [],

@@ -9,7 +9,11 @@ dotenv.config();
 const app = express();
 
 // Middlewares
-app.use(cors());
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true,
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Initialize Database connection (will auto-fallback to local JSON DB if MONGODB_URI is not provided)
@@ -22,8 +26,10 @@ app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/sprints', require('./routes/sprintRoutes'));
 app.use('/api/collaboration', require('./routes/collaborationRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/billing', require('./routes/billingRoutes'));
 
 const path = require('path');
+const fs = require('fs');
 
 // Server status ping
 app.get('/api/ping', (req, res) => {
@@ -34,17 +40,36 @@ app.get('/api/ping', (req, res) => {
   });
 });
 
-// Serve compiled React frontend assets in production
+// Serve compiled React frontend assets in production if they exist
 if (process.env.NODE_ENV === 'production') {
-  // Set static folder
-  app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+  const staticPath = path.join(__dirname, '..', 'client', 'dist');
+  
+  if (fs.existsSync(staticPath)) {
+    // Set static folder
+    app.use(express.static(staticPath));
 
-  // Redirect all non-API GET requests to index.html (client-side routing)
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api/')) {
-      res.sendFile(path.resolve(__dirname, '..', 'client', 'dist', 'index.html'));
-    }
-  });
+    // Redirect all non-API GET requests to index.html (client-side routing)
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api/')) {
+        const indexPath = path.join(staticPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).send('Not Found');
+        }
+      }
+    });
+  } else {
+    // Fallback welcome message for separate backend deployment
+    app.get('/', (req, res) => {
+      res.json({
+        message: 'Welcome to the ApexAgile API Service',
+        status: 'online',
+        timestamp: new Date().toISOString(),
+        databaseMode: process.env.MONGODB_URI ? 'MongoDB (Cloud/Local)' : 'Local JSON Fallback DB'
+      });
+    });
+  }
 }
 
 // Global Error Handler

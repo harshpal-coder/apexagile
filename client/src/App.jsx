@@ -15,6 +15,8 @@ import SprintPage from './pages/SprintPage';
 import TeamPage from './pages/TeamPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import TimelinePage from './pages/TimelinePage';
+import SaaSUpgradeModal from './components/SaaSUpgradeModal';
 
 export default function App() {
   const path = usePath();
@@ -70,6 +72,8 @@ export default function App() {
                   return <KanbanBoardPage />;
                 case '/sprint':
                   return <SprintPage />;
+                case '/timeline':
+                  return <TimelinePage />;
                 case '/team':
                   return <TeamPage />;
                 case '/profile':
@@ -85,5 +89,10 @@ export default function App() {
     }
   };
 
-  return <>{renderContent()}</>;
+  return (
+    <>
+      {renderContent()}
+      <SaaSUpgradeModal />
+    </>
+  );
 }

@@ -16,6 +16,30 @@ exports.createTask = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Project not found' });
     }
 
+    // Check SaaS Task limits in workspace
+    const workspace = await Workspace.findById(project.workspaceId);
+    if (workspace) {
+      const ownerUser = await User.findById(workspace.owner);
+      const plan = ownerUser.subscription?.plan || 'Free';
+
+      if (plan === 'Free') {
+        const projects = await Project.find({ workspaceId: workspace._id });
+        let totalWorkspaceTasks = 0;
+        for (const p of projects) {
+          const c = await Task.countDocuments({ projectId: p._id });
+          totalWorkspaceTasks += c;
+        }
+
+        if (totalWorkspaceTasks >= 10) {
+          return res.status(402).json({
+            success: false,
+            code: 'LIMIT_EXCEEDED',
+            message: 'Task limit reached (max 10 tasks on Free tier). Upgrade to Pro for unlimited tasks!'
+          });
+        }
+      }
+    }
+
     // Generate unique sequential Jira key e.g., DEM-1
     const taskCount = await Task.countDocuments({ projectId });
     const taskKey = `${project.key}-${taskCount + 1}`;
@@ -31,6 +55,7 @@ exports.createTask = async (req, res) => {
       projectId,
       sprintId: sprintId || null,
       dueDate: dueDate || null,
+      completedAt: (status === 'Done') ? new Date() : null,
       labels: labels || [],
       attachments: []
     });
@@ -161,7 +186,14 @@ exports.updateTask = async (req, res) => {
     const updates = {};
     if (title) updates.title = title;
     if (description !== undefined) updates.description = description;
-    if (status) updates.status = status;
+    if (status) {
+      updates.status = status;
+      if (status === 'Done') {
+        updates.completedAt = new Date();
+      } else {
+        updates.completedAt = null;
+      }
+    }
     if (priority) updates.priority = priority;
     if (assigneeId !== undefined) updates.assignee = assigneeId;
     if (sprintId !== undefined) updates.sprintId = sprintId;

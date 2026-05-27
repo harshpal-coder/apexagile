@@ -16,8 +16,7 @@ import { useTaskStore } from '../context/useTaskStore';
 import { useAuthStore } from '../context/useAuthStore';
 import { navigate } from '../utils/router';
 import axios from 'axios';
-
-const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:5000/api' : '/api';
+import { API_URL } from '../config';
 
 export default function ProjectsPage() {
   const { user } = useAuthStore();

@@ -62,7 +62,8 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        workspaces: [workspace._id]
+        workspaces: [workspace._id],
+        subscription: user.subscription || { plan: 'Free', status: 'Active' }
       }
     });
   } catch (error) {
@@ -100,7 +101,8 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        workspaces: user.workspaces || []
+        workspaces: user.workspaces || [],
+        subscription: user.subscription || { plan: 'Free', status: 'Active' }
       }
     });
   } catch (error) {
@@ -124,7 +126,8 @@ exports.getMe = async (req, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        workspaces: user.workspaces || []
+        workspaces: user.workspaces || [],
+        subscription: user.subscription || { plan: 'Free', status: 'Active' }
       }
     });
   } catch (error) {
@@ -157,7 +160,8 @@ exports.updateProfile = async (req, res) => {
         email: updatedUser.email,
         role: updatedUser.role,
         avatar: updatedUser.avatar,
-        workspaces: updatedUser.workspaces || []
+        workspaces: updatedUser.workspaces || [],
+        subscription: updatedUser.subscription || { plan: 'Free', status: 'Active' }
       }
     });
   } catch (error) {
@@ -248,7 +252,8 @@ exports.googleLogin = async (req, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        workspaces: user.workspaces || []
+        workspaces: user.workspaces || [],
+        subscription: user.subscription || { plan: 'Free', status: 'Active' }
       }
     });
   } catch (error) {

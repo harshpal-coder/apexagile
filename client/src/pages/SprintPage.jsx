@@ -121,57 +121,105 @@ export default function SprintPage() {
     const chartW = width - padding * 2;
     const chartH = height - padding * 2;
 
-    // Ideal line coords: starts at total, ends at 0
-    const idealStart = { x: padding, y: padding };
-    const idealEnd = { x: padding + chartW, y: padding + chartH };
-    const idealPath = `M ${idealStart.x} ${idealStart.y} L ${idealEnd.x} ${idealEnd.y}`;
-
-    // Actual line coords (simulated step down for UI aesthetics)
-    const steps = 5;
-    const completedVal = sprintStats.completed;
     const totalVal = sprintStats.total;
-    const actualPoints = [];
-    
-    for (let i = 0; i <= steps; i++) {
-      const ratio = i / steps;
-      const x = padding + ratio * chartW;
-      
-      // Calculate a drop based on completed ratio
-      let valRatio = 1 - ratio * (completedVal / totalVal);
-      // add minor variation
-      if (i > 0 && i < steps) {
-        valRatio += (Math.random() - 0.5) * 0.08;
-      }
-      
-      const y = padding + (1 - Math.max(0, Math.min(1, valRatio))) * chartH;
-      actualPoints.push({ x, y });
+    const burndownData = sprintStats.burndown || [];
+
+    if (burndownData.length === 0) {
+      // Fallback to simple simulated start and end ideal line if no burndown dates mapped yet
+      const idealStart = { x: padding, y: padding };
+      const idealEnd = { x: padding + chartW, y: padding + chartH };
+      return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-[320px] h-auto overflow-visible select-none">
+          <line
+            x1={idealStart.x}
+            y1={idealStart.y}
+            x2={idealEnd.x}
+            y2={idealEnd.y}
+            stroke="#94a3b8"
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+          />
+          <line
+            x1={padding}
+            y1={padding + chartH * (1 - (sprintStats.completed / totalVal))}
+            x2={padding + chartW}
+            y2={padding + chartH * (1 - (sprintStats.completed / totalVal))}
+            stroke="#0ea5e9"
+            strokeWidth={2}
+          />
+        </svg>
+      );
     }
 
+    // Map each daily point to SVG coordinate space
+    const idealPoints = burndownData.map((d, i) => {
+      const x = padding + (i / (burndownData.length - 1)) * chartW;
+      const y = padding + (1 - Math.max(0, d.ideal / totalVal)) * chartH;
+      return { x, y, val: d.ideal, day: d.day };
+    });
+
+    const actualPoints = burndownData
+      .filter(d => d.actual !== null && d.actual !== undefined)
+      .map((d) => {
+        const origIndex = burndownData.findIndex(item => item.day === d.day);
+        const x = padding + (origIndex / (burndownData.length - 1)) * chartW;
+        const y = padding + (1 - Math.max(0, d.actual / totalVal)) * chartH;
+        return { x, y, val: d.actual, day: d.day };
+      });
+
+    const idealPath = idealPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
     const actualPath = actualPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-[320px] h-auto overflow-visible select-none">
         {/* Ideal Line - Dotted Slate */}
-        <line
-          x1={idealStart.x}
-          y1={idealStart.y}
-          x2={idealEnd.x}
-          y2={idealEnd.y}
+        <path
+          d={idealPath}
+          fill="none"
           stroke="#94a3b8"
           strokeWidth={1.5}
           strokeDasharray="4 4"
         />
+        
         {/* Actual Line - Brand Blue */}
-        <path
-          d={actualPath}
-          fill="none"
-          stroke="#0ea5e9"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-        />
-        {/* Bullets */}
+        {actualPoints.length > 0 && (
+          <path
+            d={actualPath}
+            fill="none"
+            stroke="#0ea5e9"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        )}
+        
+        {/* Ideal Points / Bullets */}
+        {idealPoints.map((p, i) => (
+          <circle
+            key={`ideal-${i}`}
+            cx={p.x}
+            cy={p.y}
+            r={2}
+            fill="#94a3b8"
+            className="opacity-40"
+          />
+        ))}
+
+        {/* Actual Points / Bullets */}
         {actualPoints.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={4} fill="#0ea5e9" stroke="currentColor" className="text-white dark:text-darkSurface" strokeWidth={1} />
+          <g key={`actual-${i}`} className="group/dot cursor-pointer">
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={4}
+              fill="#0ea5e9"
+              stroke="currentColor"
+              className="text-white dark:text-darkSurface"
+              strokeWidth={1}
+            />
+            <circle cx={p.x} cy={p.y} r={8} fill="#0ea5e9" opacity={0} className="hover:opacity-20 transition-opacity" />
+            <title>{p.day}: {p.val} issues remaining</title>
+          </g>
         ))}
       </svg>
     );
@@ -355,8 +403,9 @@ export default function SprintPage() {
         </div>
       </div>
 
-      {/* Burn-down charts metrics panel (right sidebar) */}
+      {/* Burn-down & Velocity charts metrics panel (right sidebar) */}
       <div className="space-y-6 h-fit">
+        {/* Burndown Card */}
         <div className="p-6 rounded-2xl bg-white dark:bg-darkSurface border border-slate-200 dark:border-darkBorder shadow-sm space-y-4">
           <div className="border-b border-slate-200 dark:border-darkBorder/40 pb-3 flex items-center justify-between">
             <h4 className="text-base font-bold flex items-center gap-1.5">
@@ -387,6 +436,121 @@ export default function SprintPage() {
                   <p className="text-[8px] uppercase text-slate-400">Completed</p>
                   <p className="text-base font-extrabold text-green-500">{sprintStats.completed} Issues</p>
                 </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Team Velocity History Card */}
+        <div className="p-6 rounded-2xl bg-white dark:bg-darkSurface border border-slate-200 dark:border-darkBorder shadow-sm space-y-4">
+          <div className="border-b border-slate-200 dark:border-darkBorder/40 pb-3 flex items-center justify-between">
+            <h4 className="text-base font-bold flex items-center gap-1.5">
+              <Flame className="w-5 h-5 text-orange-400" /> Team Velocity
+            </h4>
+            <span className="text-[10px] bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-full font-bold uppercase">
+              History
+            </span>
+          </div>
+
+          {!sprintStats || !sprintStats.velocity || sprintStats.velocity.length === 0 ? (
+            <div className="text-center py-8 text-slate-500 text-xs">
+              <p>No sprint completion logs found.</p>
+              <p className="text-[10px] text-slate-400 mt-1">Complete planned sprints to begin mapping historical velocity metrics!</p>
+            </div>
+          ) : (
+            <div className="space-y-4 flex flex-col items-center">
+              {(() => {
+                const width = 350;
+                const height = 150;
+                const padding = 20;
+                const chartW = width - padding * 2;
+                const chartH = height - padding * 2;
+                const velocityData = sprintStats.velocity || [];
+
+                const maxVal = Math.max(5, ...velocityData.map(v => v.totalCount));
+
+                const barWidth = Math.max(12, Math.min(36, (chartW / velocityData.length) * 0.5));
+                const spacing = (chartW - (barWidth * velocityData.length)) / (velocityData.length + 1);
+
+                return (
+                  <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-[320px] h-auto overflow-visible select-none">
+                    {[0, 0.5, 1].map((r, idx) => {
+                      const y = padding + r * chartH;
+                      return (
+                        <line
+                          key={idx}
+                          x1={padding}
+                          y1={y}
+                          x2={width - padding}
+                          y2={y}
+                          stroke="currentColor"
+                          className="text-slate-200 dark:text-darkBorder/40"
+                          strokeWidth={1}
+                          strokeDasharray="4 4"
+                        />
+                      );
+                    })}
+
+                    {velocityData.map((data, index) => {
+                      const x = padding + spacing + index * (barWidth + spacing);
+                      
+                      const completedH = (data.completedCount / maxVal) * chartH;
+                      const completedY = padding + chartH - completedH;
+
+                      const totalH = (data.totalCount / maxVal) * chartH;
+                      const totalY = padding + chartH - totalH;
+
+                      return (
+                        <g key={index} className="group/bar cursor-pointer">
+                          <rect
+                            x={x}
+                            y={totalY}
+                            width={barWidth}
+                            height={totalH}
+                            rx={4}
+                            className="fill-slate-100 dark:fill-darkBg/60 stroke stroke-slate-200 dark:stroke-darkBorder/40"
+                            strokeWidth={1}
+                          />
+
+                          {completedH > 0 && (
+                            <rect
+                              x={x}
+                              y={completedY}
+                              width={barWidth}
+                              height={completedH}
+                              rx={4}
+                              fill="#f97316"
+                              className="fill-orange-500"
+                            />
+                          )}
+
+                          <text
+                            x={x + barWidth / 2}
+                            y={totalY - 6}
+                            textAnchor="middle"
+                            className="hidden group-hover/bar:block text-[9px] font-extrabold fill-slate-800 dark:fill-slate-200 font-mono"
+                          >
+                            {data.completedCount}/{data.totalCount}
+                          </text>
+
+                          <text
+                            x={x + barWidth / 2}
+                            y={height - 2}
+                            textAnchor="middle"
+                            className="text-[8px] font-bold fill-slate-400"
+                          >
+                            {data.sprintName.length > 8 ? `${data.sprintName.substring(0, 7)}…` : data.sprintName}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                );
+              })()}
+              
+              <div className="w-full flex items-center justify-between text-[8px] font-extrabold text-slate-400 tracking-wider uppercase border-t border-slate-100 dark:border-darkBorder/40 pt-2">
+                <span className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-[#f97316]" /> Completed</span>
+                <span className="flex items-center gap-1"><div className="w-2 h-2 rounded border border-slate-400 bg-transparent" /> Total Scope</span>
               </div>
             </div>
           )}

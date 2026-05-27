@@ -180,6 +180,34 @@ exports.addProjectMember = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Project not found' });
     }
 
+    const workspace = await Workspace.findById(project.workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ success: false, message: 'Workspace not found' });
+    }
+
+    // SaaS Seats Check
+    if (!(workspace.members || []).includes(user._id.toString())) {
+      const ownerUser = await User.findById(workspace.owner);
+      const plan = ownerUser.subscription?.plan || 'Free';
+      const currentMembersCount = workspace.members ? workspace.members.length : 0;
+
+      if (plan === 'Free' && currentMembersCount >= 3) {
+        return res.status(402).json({
+          success: false,
+          code: 'LIMIT_EXCEEDED',
+          message: 'Workspace member capacity reached (max 3 members on Free tier). Upgrade to Pro for up to 15 members, or Enterprise for unlimited!'
+        });
+      }
+
+      if (plan === 'Pro' && currentMembersCount >= 15) {
+        return res.status(402).json({
+          success: false,
+          code: 'LIMIT_EXCEEDED',
+          message: 'Workspace member capacity reached (max 15 members on Pro tier). Upgrade to Enterprise for unlimited members!'
+        });
+      }
+    }
+
     const projectMembers = project.members || [];
     if (projectMembers.includes(user._id.toString())) {
       return res.status(400).json({ success: false, message: 'User is already a project member' });
@@ -192,8 +220,7 @@ exports.addProjectMember = async (req, res) => {
     );
 
     // Also add to workspace if not already present
-    const workspace = await Workspace.findById(project.workspaceId);
-    if (workspace && !(workspace.members || []).includes(user._id.toString())) {
+    if (!(workspace.members || []).includes(user._id.toString())) {
       await Workspace.findByIdAndUpdate(project.workspaceId, {
         $push: { members: user._id }
       });
@@ -244,6 +271,27 @@ exports.createWorkspace = async (req, res) => {
     const { name, description } = req.body;
     if (!name) {
       return res.status(400).json({ success: false, message: 'Please provide workspace name' });
+    }
+
+    // SaaS Workspace Limits Check
+    const user = await User.findById(req.user._id);
+    const plan = user.subscription?.plan || 'Free';
+    const ownedCount = await Workspace.countDocuments({ owner: user._id });
+
+    if (plan === 'Free' && ownedCount >= 1) {
+      return res.status(402).json({
+        success: false,
+        code: 'LIMIT_EXCEEDED',
+        message: 'Workspace limit reached. You can create only 1 workspace on the Free tier. Upgrade to Pro for up to 5 workspaces, or Enterprise for unlimited!'
+      });
+    }
+
+    if (plan === 'Pro' && ownedCount >= 5) {
+      return res.status(402).json({
+        success: false,
+        code: 'LIMIT_EXCEEDED',
+        message: 'Workspace limit reached. Pro plan allows up to 5 workspaces. Upgrade to Enterprise for unlimited workspaces!'
+      });
     }
 
     const slug = `${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString(36)}`;

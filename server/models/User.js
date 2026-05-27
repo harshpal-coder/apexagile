@@ -30,7 +30,30 @@ const UserSchema = new mongoose.Schema({
   workspaces: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Workspace'
-  }]
+  }],
+  subscription: {
+    plan: {
+      type: String,
+      enum: ['Free', 'Pro', 'Enterprise'],
+      default: 'Free'
+    },
+    status: {
+      type: String,
+      default: 'Active'
+    },
+    currentPeriodEnd: {
+      type: Date,
+      default: null
+    },
+    paymentCard: {
+      type: String,
+      default: null
+    },
+    customerName: {
+      type: String,
+      default: null
+    }
+  }
 }, {
   timestamps: true
 });

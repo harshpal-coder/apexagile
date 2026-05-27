@@ -49,6 +49,10 @@ const TaskSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  completedAt: {
+    type: Date,
+    default: null
+  },
   labels: [{
     type: String,
     trim: true

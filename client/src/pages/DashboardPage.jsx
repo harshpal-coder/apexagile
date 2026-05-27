@@ -19,8 +19,7 @@ import { useTaskStore } from '../context/useTaskStore';
 import { useSprintStore } from '../context/useSprintStore';
 import axios from 'axios';
 import { navigate } from '../utils/router';
-
-const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:5000/api' : '/api';
+import { API_URL } from '../config';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
